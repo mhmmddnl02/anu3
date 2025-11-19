@@ -1,4 +1,4 @@
-# MYnyak Engsel
+# MYnyak Engsel Sunset
 
 ![banner](bnr.png)
 
@@ -20,11 +20,11 @@ pkg install git -y
 ```
 3. Clone this repo
 ```
-git clone https://github.com/purplemashu/me-cli
+git clone https://github.com/purplemashu/me-cli-sunset
 ```
 4. Open the folder
 ```
-cd me-cli
+cd me-cli-sunset
 ```
 5. Setup
 ```
