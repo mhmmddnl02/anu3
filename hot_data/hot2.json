@@ -50,6 +50,7 @@
                 "family_code": "580c1f94-7dc4-416e-96f6-8faf26567516",
                 "is_enterprise": false,
                 "migration_type": "NONE",
+                "variant_name": "",
                 "variant_code": "b50f954a-696e-46d0-8700-8e4d38521525",
                 "option_name": "",
                 "order": 27
@@ -64,7 +65,7 @@
     {
         "name": "Pros Champion 20GB + Unlimited",
         "price": "Rp40000",
-        "detail": "Unlimited WA & Spotify.\nLangkah pertama di bulan tidak diambil oleh orang yang ragu.\n#RagumuRugimu\nSupported payment: E-wallet & QRIS.",
+        "detail": "\nUnlimited WA & Spotify.\nLangkah pertama di bulan tidak diambil oleh orang yang ragu.\n#RagumuRugimu\nSupported payment: E-wallet & QRIS.",
         "packages": [
             {
                 "family_name": "Xtra Combo Flex",
@@ -94,7 +95,7 @@
     {
         "name": "Udemy 15GB",
         "price": "Rp7500",
-        "detail": "Membuat belajarmu lebih asyik.\nSupported payment: E-wallet & QRIS.",
+        "detail": "\nMembuat belajarmu lebih asyik.\nSupported payment: E-wallet & QRIS.",
         "packages": [
             {
                 "family_name": "Bonus myRewards",
@@ -124,7 +125,7 @@
     {
         "name": "Shopeefood 12GB + Unlimited",
         "price": "Rp55000",
-        "detail": "Unlimited WA & Shopee.\nTembok China tidak dibangun oleh orang yang ragu.\n#RagumuRugimu\nSupported payment: E-wallet & QRIS.",
+        "detail": "\nUnlimited WA & Shopee.\nTembok China tidak dibangun oleh orang yang ragu.\n#RagumuRugimu\nSupported payment: E-wallet & QRIS.",
         "packages": [
             {
                 "family_name": "ShopeeFood Packages",
@@ -242,4 +243,4 @@
         "token_confirmation_idx": 1,
         "amount_idx": -1
     }
-]
+                ]
