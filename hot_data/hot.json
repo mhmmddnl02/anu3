@@ -22,5 +22,13 @@
         "variant_name": "Netflix",
         "option_name": "Netflix",
         "order": 1
+    },
+    {
+        "family_name": "Video & Music",
+        "family_code": "b50cef3e-fcd0-4699-83a9-6f5740b7ef31",
+        "is_enterprise": false,
+        "variant_name": "CATCHPLAY+",
+        "option_name": "CATCHPLAY+",
+        "order": 2
     }
 ]
