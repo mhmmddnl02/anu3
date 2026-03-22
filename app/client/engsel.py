@@ -82,7 +82,6 @@ def get_profile(api_key: str, access_token: str, id_token: str) -> dict:
     res = send_api_request(api_key, path, raw_payload, id_token, "POST")
 
 print("RAW RESPONSE:", res)   # <-- TAMBAH INI
-
 return res.get("data")
 
 def get_balance(api_key: str, id_token: str) -> dict:
