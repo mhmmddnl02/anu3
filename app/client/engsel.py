@@ -81,7 +81,8 @@ def get_profile(api_key: str, access_token: str, id_token: str) -> dict:
     print("Fetching profile...")
     res = send_api_request(api_key, path, raw_payload, id_token, "POST")
 
-    return res.get("data")
+    print("RAW RESPONSE:", res)   # ✅ sudah benar
+    return res.get("data")       # ✅ sudah benar
 
 def get_balance(api_key: str, id_token: str) -> dict:
     path = "api/v8/packages/balance-and-credit"
@@ -515,3 +516,4 @@ def dashboard_segments(
     res = send_api_request(api_key, path, raw_payload, tokens["id_token"], "POST")
 
     return res
+    
