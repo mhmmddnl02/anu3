@@ -47,8 +47,6 @@ def send_api_request(
     print("ID_TOKEN:", safe_id_token)
     print("===========================\n")
 
-    # VALIDASI
-
     if not API_KEY:
         return {
             "status": "ERROR",
@@ -61,7 +59,9 @@ def send_api_request(
             "message": "api_key kosong"
         }
 
+    # =====================================================
     # ENCRYPT
+    # =====================================================
 
     try:
 
@@ -82,7 +82,9 @@ def send_api_request(
             "message": str(e)
         }
 
+    # =====================================================
     # SIGNATURE
+    # =====================================================
 
     try:
 
@@ -90,7 +92,9 @@ def send_api_request(
             encrypted_payload["encrypted_body"]["xtime"]
         )
 
-        now = datetime.now(timezone.utc).astimezone()
+        now = datetime.now(
+            timezone.utc
+        ).astimezone()
 
         sig_time_sec = (xtime // 1000)
 
@@ -107,10 +111,15 @@ def send_api_request(
             "message": str(e)
         }
 
+    # =====================================================
     # HEADERS
+    # =====================================================
 
     headers = {
-        "host": BASE_API_URL.replace("https://", ""),
+        "host": BASE_API_URL.replace(
+            "https://",
+            ""
+        ),
         "content-type": "application/json; charset=utf-8",
         "user-agent": UA,
         "x-api-key": API_KEY,
@@ -125,7 +134,9 @@ def send_api_request(
 
     url = f"{BASE_API_URL}/{path}"
 
+    # =====================================================
     # REQUEST
+    # =====================================================
 
     try:
 
@@ -149,7 +160,9 @@ def send_api_request(
     print(resp.text)
     print("==================================\n")
 
-    # JSON PARSE
+    # =====================================================
+    # PARSE JSON
+    # =====================================================
 
     try:
         response_json = json.loads(resp.text)
@@ -162,7 +175,9 @@ def send_api_request(
             "raw_response": resp.text
         }
 
+    # =====================================================
     # DECRYPT
+    # =====================================================
 
     try:
 
@@ -196,7 +211,7 @@ def get_profile(
     api_key: str,
     access_token: str,
     id_token: str
-) -> dict:
+):
 
     path = "api/v8/profile"
 
@@ -227,7 +242,7 @@ def get_profile(
 def get_balance(
     api_key: str,
     id_token: str
-) -> dict:
+):
 
     path = "api/v8/packages/balance-and-credit"
 
@@ -262,7 +277,7 @@ def get_family(
     family_code: str,
     is_enterprise: bool = False,
     migration_type: str = "NONE"
-) -> dict:
+):
 
     path = "api/v8/xl-stores/options/list"
 
@@ -301,7 +316,7 @@ def get_families(
     api_key: str,
     tokens: dict,
     package_category_code: str
-) -> dict:
+):
 
     path = "api/v8/xl-stores/families"
 
@@ -338,7 +353,7 @@ def get_package(
     package_option_code: str,
     package_family_code: str = "",
     package_variant_code: str = ""
-) -> dict:
+):
 
     path = "api/v8/xl-stores/options/detail"
 
@@ -378,7 +393,7 @@ def get_addons(
     api_key: str,
     tokens: dict,
     package_option_code: str
-) -> dict:
+):
 
     path = "api/v8/xl-stores/options/addons-pinky-box"
 
@@ -386,64 +401,6 @@ def get_addons(
         "is_enterprise": False,
         "lang": "en",
         "package_option_code": package_option_code
-    }
-
-    res = send_api_request(
-        api_key,
-        path,
-        payload,
-        tokens.get("id_token", "")
-    )
-
-    if not isinstance(res, dict):
-        return {}
-
-    return res.get("data", {})
-
-
-# =========================================================
-# INTERCEPT PAGE
-# =========================================================
-
-def intercept_page(
-    api_key: str,
-    tokens: dict,
-    option_code: str,
-    is_enterprise: bool = False
-):
-
-    path = "misc/api/v8/utility/intercept-page"
-
-    payload = {
-        "is_enterprise": is_enterprise,
-        "lang": "en",
-        "package_option_code": option_code
-    }
-
-    return send_api_request(
-        api_key,
-        path,
-        payload,
-        tokens.get("id_token", "")
-    )
-
-
-# =========================================================
-# LOGIN INFO
-# =========================================================
-
-def login_info(
-    api_key: str,
-    tokens: dict,
-    is_enterprise: bool = False
-):
-
-    path = "api/v8/auth/login"
-
-    payload = {
-        "access_token": tokens.get("access_token", ""),
-        "is_enterprise": is_enterprise,
-        "lang": "en"
     }
 
     res = send_api_request(
