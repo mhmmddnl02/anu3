@@ -42,10 +42,7 @@ def send_api_request(
     print("id_token:", id_token)
     print("===========================\n")
 
-    # =====================================================
     # VALIDASI
-    # =====================================================
-
     if not API_KEY:
         return {
             "status": "ERROR",
@@ -57,22 +54,6 @@ def send_api_request(
             "status": "ERROR",
             "message": "api_key kosong"
         }
-
-    if not BASE_API_URL:
-        return {
-            "status": "ERROR",
-            "message": "BASE_API_URL kosong"
-        }
-
-    if not UA:
-        return {
-            "status": "ERROR",
-            "message": "UA kosong"
-        }
-
-    # =====================================================
-    # ENCRYPT PAYLOAD
-    # =====================================================
 
     try:
         encrypted_payload = encryptsign_xdata(
@@ -88,12 +69,8 @@ def send_api_request(
 
         return {
             "status": "ERROR",
-            "message": f"Encrypt gagal: {str(e)}"
+            "message": str(e)
         }
-
-    # =====================================================
-    # SIGNATURE
-    # =====================================================
 
     try:
         xtime = int(
@@ -113,12 +90,8 @@ def send_api_request(
 
         return {
             "status": "ERROR",
-            "message": f"Signature gagal: {str(e)}"
+            "message": str(e)
         }
-
-    # =====================================================
-    # HEADERS
-    # =====================================================
 
     headers = {
         "host": BASE_API_URL.replace("https://", ""),
@@ -138,10 +111,6 @@ def send_api_request(
 
     print("REQUEST URL:", url)
 
-    # =====================================================
-    # SEND REQUEST
-    # =====================================================
-
     try:
         resp = requests.post(
             url,
@@ -155,16 +124,12 @@ def send_api_request(
 
         return {
             "status": "ERROR",
-            "message": f"Request gagal: {str(e)}"
+            "message": str(e)
         }
 
     print("\n========== RAW RESPONSE ==========")
     print(resp.text)
     print("==================================\n")
-
-    # =====================================================
-    # DECRYPT RESPONSE
-    # =====================================================
 
     try:
         decrypted_body = decrypt_xdata(
@@ -176,45 +141,16 @@ def send_api_request(
         print(json.dumps(decrypted_body, indent=2))
         print("==================================\n")
 
+        return decrypted_body
+
     except Exception as e:
         print("[decrypt error]", e)
 
         return {
             "status": "ERROR",
-            "message": f"Decrypt gagal: {str(e)}",
+            "message": str(e),
             "raw_response": resp.text
         }
-
-    # =====================================================
-    # HANDLE OTP / TOKEN EXPIRED
-    # =====================================================
-
-    try:
-        response_text = str(decrypted_body).lower()
-
-        expired_keywords = [
-            "expired",
-            "unauthorized",
-            "invalid token",
-            "invalid otp",
-            "token expired",
-            "session expired"
-        ]
-
-        if any(keyword in response_text for keyword in expired_keywords):
-
-            print("OTP / Session expired")
-            print("Silahkan login ulang untuk request OTP baru")
-
-            return {
-                "status": "EXPIRED",
-                "message": "OTP atau session expired"
-            }
-
-    except Exception as e:
-        print("[expired check error]", e)
-
-    return decrypted_body
 
 
 # =========================================================
@@ -241,12 +177,10 @@ def get_profile(api_key: str, access_token: str, id_token: str) -> dict:
         "POST"
     )
 
-    print("RAW RESPONSE:", res)
-
     if not isinstance(res, dict):
         return {}
 
-    return res.get("data", {})
+    return res.get("data")
 
 
 # =========================================================
@@ -271,35 +205,125 @@ def get_balance(api_key: str, id_token: str) -> dict:
         "POST"
     )
 
-    if not isinstance(res, dict):
-        return {}
-
     if "data" in res:
         if "balance" in res["data"]:
             return res["data"]["balance"]
-
-    print("Error getting balance")
 
     return {}
 
 
 # =========================================================
-# LOGIN INFO
+# GET FAMILY
 # =========================================================
 
-def login_info(
+def get_family(
     api_key: str,
     tokens: dict,
-    is_enterprise: bool = False
-):
+    family_code: str,
+    is_enterprise: bool | None = None,
+    migration_type: str | None = None
+) -> dict:
 
-    path = "api/v8/auth/login"
+    print("Fetching package family...")
 
-    raw_payload = {
-        "access_token": tokens.get("access_token", ""),
-        "is_enterprise": is_enterprise,
+    path = "api/v8/xl-stores/options/list"
+
+    payload_dict = {
+        "is_show_tagging_tab": True,
+        "is_dedicated_event": True,
+        "is_transaction_routine": False,
+        "migration_type": migration_type or "NONE",
+        "package_family_code": family_code,
+        "is_autobuy": False,
+        "is_enterprise": is_enterprise or False,
+        "is_pdlp": True,
+        "referral_code": "",
+        "is_migration": False,
         "lang": "en"
     }
+
+    res = send_api_request(
+        api_key,
+        path,
+        payload_dict,
+        tokens.get("id_token", ""),
+        "POST"
+    )
+
+    if not isinstance(res, dict):
+        return {}
+
+    return res.get("data")
+
+
+# =========================================================
+# GET FAMILIES
+# =========================================================
+
+def get_families(
+    api_key: str,
+    tokens: dict,
+    package_category_code: str
+) -> dict:
+
+    print("Fetching families...")
+
+    path = "api/v8/xl-stores/families"
+
+    payload_dict = {
+        "migration_type": "",
+        "is_enterprise": False,
+        "is_shareable": False,
+        "package_category_code": package_category_code,
+        "with_icon_url": True,
+        "is_migration": False,
+        "lang": "en"
+    }
+
+    res = send_api_request(
+        api_key,
+        path,
+        payload_dict,
+        tokens.get("id_token", ""),
+        "POST"
+    )
+
+    if not isinstance(res, dict):
+        return {}
+
+    return res.get("data")
+
+
+# =========================================================
+# GET PACKAGE
+# =========================================================
+
+def get_package(
+    api_key: str,
+    tokens: dict,
+    package_option_code: str,
+    package_family_code: str = "",
+    package_variant_code: str = ""
+) -> dict:
+
+    path = "api/v8/xl-stores/options/detail"
+
+    raw_payload = {
+        "is_transaction_routine": False,
+        "migration_type": "NONE",
+        "package_family_code": package_family_code,
+        "family_role_hub": "",
+        "is_autobuy": False,
+        "is_enterprise": False,
+        "is_shareable": False,
+        "is_migration": False,
+        "lang": "en",
+        "package_option_code": package_option_code,
+        "is_upsell_pdp": False,
+        "package_variant_code": package_variant_code
+    }
+
+    print("Fetching package...")
 
     res = send_api_request(
         api_key,
@@ -312,32 +336,28 @@ def login_info(
     if not isinstance(res, dict):
         return {}
 
-    if "data" not in res:
-        print(json.dumps(res, indent=2))
-        print("Error login")
-
-        return {}
-
-    return res["data"]
+    return res.get("data")
 
 
 # =========================================================
-# TIERING
+# GET ADDONS
 # =========================================================
 
-def get_tiering_info(
+def get_addons(
     api_key: str,
-    tokens: dict
+    tokens: dict,
+    package_option_code: str
 ) -> dict:
 
-    path = "gamification/api/v8/loyalties/tiering/info"
+    path = "api/v8/xl-stores/options/addons-pinky-box"
 
     raw_payload = {
         "is_enterprise": False,
-        "lang": "en"
+        "lang": "en",
+        "package_option_code": package_option_code
     }
 
-    print("Fetching tiering info...")
+    print("Fetching addons...")
 
     res = send_api_request(
         api_key,
@@ -350,7 +370,68 @@ def get_tiering_info(
     if not isinstance(res, dict):
         return {}
 
-    return res.get("data", {})
+    return res.get("data")
+
+
+# =========================================================
+# GET PACKAGE DETAILS
+# =========================================================
+
+def get_package_details(
+    api_key: str,
+    tokens: dict,
+    family_code: str,
+    variant_code: str,
+    option_order: int,
+    is_enterprise: bool | None = None,
+    migration_type: str | None = None
+) -> dict | None:
+
+    family_data = get_family(
+        api_key,
+        tokens,
+        family_code,
+        is_enterprise,
+        migration_type
+    )
+
+    if not family_data:
+        return None
+
+    package_variants = family_data.get(
+        "package_variants",
+        []
+    )
+
+    option_code = None
+
+    for variant in package_variants:
+
+        if variant.get("package_variant_code") == variant_code:
+
+            package_options = variant.get(
+                "package_options",
+                []
+            )
+
+            for option in package_options:
+
+                if option.get("order") == option_order:
+
+                    option_code = option.get(
+                        "package_option_code"
+                    )
+
+                    break
+
+    if not option_code:
+        return None
+
+    return get_package(
+        api_key,
+        tokens,
+        option_code
+    )
 
 
 # =========================================================
@@ -377,8 +458,34 @@ def get_notifications(
         "POST"
     )
 
-    if not isinstance(res, dict):
-        return {}
+    return res
+
+
+# =========================================================
+# NOTIFICATION DETAIL
+# =========================================================
+
+def get_notification_detail(
+    api_key: str,
+    tokens: dict,
+    notification_id: str
+):
+
+    path = "api/v8/notification/detail"
+
+    raw_payload = {
+        "is_enterprise": False,
+        "lang": "en",
+        "notification_id": notification_id
+    }
+
+    res = send_api_request(
+        api_key,
+        path,
+        raw_payload,
+        tokens.get("id_token", ""),
+        "POST"
+    )
 
     return res
 
@@ -412,7 +519,82 @@ def get_transaction_history(
     if not isinstance(res, dict):
         return {}
 
+    return res.get("data")
+
+
+# =========================================================
+# TIERING INFO
+# =========================================================
+
+def get_tiering_info(
+    api_key: str,
+    tokens: dict
+) -> dict:
+
+    path = "gamification/api/v8/loyalties/tiering/info"
+
+    raw_payload = {
+        "is_enterprise": False,
+        "lang": "en"
+    }
+
+    print("Fetching tiering info...")
+
+    res = send_api_request(
+        api_key,
+        path,
+        raw_payload,
+        tokens.get("id_token", ""),
+        "POST"
+    )
+
+    if not isinstance(res, dict):
+        return {}
+
     return res.get("data", {})
+
+
+# =========================================================
+# UNSUBSCRIBE
+# =========================================================
+
+def unsubscribe(
+    api_key: str,
+    tokens: dict,
+    quota_code: str,
+    product_domain: str,
+    product_subscription_type: str,
+) -> bool:
+
+    path = "api/v8/packages/unsubscribe"
+
+    raw_payload = {
+        "product_subscription_type": product_subscription_type,
+        "quota_code": quota_code,
+        "product_domain": product_domain,
+        "is_enterprise": False,
+        "unsubscribe_reason_code": "",
+        "lang": "en",
+        "family_member_id": ""
+    }
+
+    try:
+
+        res = send_api_request(
+            api_key,
+            path,
+            raw_payload,
+            tokens.get("id_token", ""),
+            "POST"
+        )
+
+        if res and res.get("code") == "000":
+            return True
+
+        return False
+
+    except Exception:
+        return False
 
 
 # =========================================================
@@ -437,8 +619,5 @@ def dashboard_segments(
         tokens.get("id_token", ""),
         "POST"
     )
-
-    if not isinstance(res, dict):
-        return {}
 
     return res
